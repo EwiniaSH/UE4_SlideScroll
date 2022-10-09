@@ -32,6 +32,9 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HP = 100.0f;
+	AttackPower = 50.0f;
 }
 
 void AMyCharacter::PostInitializeComponents()
@@ -120,5 +123,6 @@ void AMyCharacter::OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedCom
 	if (OtherActor != this)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OverLap %s"), *OtherActor->GetName());
+		UGameplayStatics::ApplyDamage(OtherActor, AttackPower, GetController(), nullptr, NULL);
 	}
 }

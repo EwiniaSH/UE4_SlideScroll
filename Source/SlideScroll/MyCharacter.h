@@ -57,4 +57,8 @@ public:
 	UAnimMontage* JumpAnim;
 
 	UMyCharacterAnimInstance* AnimInstance;
+
+private:
+	float HP;
+	float AttackPower;
 };
