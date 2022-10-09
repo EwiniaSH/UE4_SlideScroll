@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
+#include "MyCharacterAnimInstance.h"
 #include "MyCharacter.generated.h"
 
 UCLASS()
@@ -20,27 +22,39 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
 	void Movement(float Value);
 	void Attack();
 	virtual void Jump() override;
 	virtual void Landed(const FHitResult& Hit) override;
 
+	UFUNCTION()
+	void OnColStartAttack();
+	UFUNCTION()
+	void OnColEndAttack();
+	UFUNCTION()
+	void OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attack)
+	UCapsuleComponent* WeaponCollision;
 	UPROPERTY(EditAnywhere, Category = Animation)
-	UAnimMontage* Attack_Anim;
+	UAnimMontage* AttackAnim;
 	UPROPERTY(EditAnywhere, Category = Animation)
-	UAnimMontage* Jump_Anim;
+	UAnimMontage* JumpAnim;
 
-	UAnimInstance* AnimInstance;
+	UMyCharacterAnimInstance* AnimInstance;
 };

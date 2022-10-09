@@ -19,9 +19,10 @@ AMyCharacter::AMyCharacter()
 	SpringArm->bInheritYaw = false;
 	SpringArm->bEnableCameraLag = true;
 	SpringArm->bDoCollisionTest = false;
-
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	WeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
+	WeaponCollision->SetupAttachment(GetMesh(), TEXT("RightHand"));
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -31,9 +32,24 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 
 	SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
-	AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnBeginWeaponOverlap);
+	WeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AnimInstance = Cast<UMyCharacterAnimInstance>(GetMesh()->GetAnimInstance());
+	AnimInstance->OnColStartAttack.BindUFunction(this, FName("OnColStartAttack"));
+	AnimInstance->OnColEndAttack.BindUFunction(this, FName("OnColEndAttack"));
+}
+
+void AMyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	AnimInstance->OnColStartAttack.Unbind();
+	AnimInstance->OnColEndAttack.Unbind();
 }
 
 // Called every frame
@@ -55,7 +71,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Movement(float Value)
 {
-	if (!AnimInstance->Montage_IsPlaying(Attack_Anim))
+	if (!AnimInstance->Montage_IsPlaying(AttackAnim))
 	{
 		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
 	}
@@ -63,9 +79,9 @@ void AMyCharacter::Movement(float Value)
 
 void AMyCharacter::Attack()
 {
-	if (!AnimInstance->Montage_IsPlaying(Attack_Anim))
+	if (!AnimInstance->Montage_IsPlaying(AttackAnim))
 	{
-		PlayAnimMontage(Attack_Anim);
+		PlayAnimMontage(AttackAnim);
 	}
 }
 
@@ -73,9 +89,9 @@ void AMyCharacter::Jump()
 {
 	Super::Jump();
 
-	if (!AnimInstance->Montage_IsPlaying(Jump_Anim))
+	if (!AnimInstance->Montage_IsPlaying(JumpAnim))
 	{
-		PlayAnimMontage(Jump_Anim);
+		PlayAnimMontage(JumpAnim);
 	}
 }
 
@@ -83,8 +99,26 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	if (AnimInstance->Montage_IsPlaying(Jump_Anim))
+	if (AnimInstance->Montage_IsPlaying(JumpAnim))
 	{
-		StopAnimMontage(Jump_Anim);
+		StopAnimMontage(JumpAnim);
+	}
+}
+
+void AMyCharacter::OnColStartAttack()
+{
+	WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void AMyCharacter::OnColEndAttack()
+{
+	WeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AMyCharacter::OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OverLap %s"), *OtherActor->GetName());
 	}
 }
