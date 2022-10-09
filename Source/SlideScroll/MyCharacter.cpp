@@ -17,6 +17,8 @@ AMyCharacter::AMyCharacter()
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 800.0f;
 	SpringArm->bInheritYaw = false;
+	SpringArm->bEnableCameraLag = true;
+	SpringArm->bDoCollisionTest = false;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
@@ -55,7 +57,7 @@ void AMyCharacter::Movement(float Value)
 {
 	if (!AnimInstance->Montage_IsPlaying(Attack_Anim))
 	{
-		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value * 20.0f);
+		AddMovementInput(FVector(0.0f, 1.0f, 0.0f), Value);
 	}
 }
 
