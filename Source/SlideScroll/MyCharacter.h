@@ -32,6 +32,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+	void SetStatus();
 	void Movement(float Value);
 	void Attack();
 	virtual void Jump() override;

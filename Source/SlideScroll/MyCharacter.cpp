@@ -25,6 +25,7 @@ AMyCharacter::AMyCharacter()
 	WeaponCollision->SetupAttachment(GetMesh(), TEXT("RightHand"));
 
 	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 860.0f, 0.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
@@ -33,8 +34,7 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HP = 100.0f;
-	AttackPower = 50.0f;
+	SetStatus();
 }
 
 void AMyCharacter::PostInitializeComponents()
@@ -70,6 +70,12 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMyCharacter::Attack);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyCharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMyCharacter::StopJumping);
+}
+
+void AMyCharacter::SetStatus()
+{
+	HP = 100.0f;
+	AttackPower = 50.0f;
 }
 
 void AMyCharacter::Movement(float Value)
