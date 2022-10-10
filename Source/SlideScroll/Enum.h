@@ -5,7 +5,9 @@
 UENUM()
 enum class EMonsterState : uint8
 {
-	Idle,
+	IdleReady,
+	IdleCombat,
 	FollowPlayerChar,
 	AttackPlayerChar,
+	Death,
 };

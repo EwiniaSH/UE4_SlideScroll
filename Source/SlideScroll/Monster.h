@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "Enum.h"
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
+#include "MonsterAnimInstance.h"
 #include "Monster.generated.h"
 
 UCLASS()
@@ -13,6 +15,7 @@ class SLIDESCROLL_API AMonster : public ACharacter
 	GENERATED_BODY()
 
 	static const float AGGRO_RANGE;
+	static const float ATTACK_RANGE;
 
 public:
 	// Sets default values for this character's properties
@@ -22,6 +25,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 	// Called every frame
@@ -31,18 +35,31 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	void Idle();
+	void IdleCombat();
 	void FollowPlayerChar();
 	void AttackPlayerChar();
 
 	void SetStatus();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	void ChangeDamageColor();
-	void SetDistanceAndDirection();
+	void UpdatePlayerCharInfo();
+
+	UFUNCTION()
+		void OnColStartAttack();
+	UFUNCTION()
+		void OnColEndAttack();
+	UFUNCTION()
+		void OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
+	UPROPERTY(EditAnywhere, Category = Attack)
+	UCapsuleComponent* WeaponCollision;
+	UPROPERTY(EditAnywhere, Category = Animation)
+	UAnimMontage* AttackAnim;
 	UPROPERTY(EditAnywhere, Category = Animation)
 	UAnimMontage* DeathAnim;
+
+	UMonsterAnimInstance* AnimInstance;
 
 private:
 	EMonsterState CurrentState;
@@ -50,4 +67,5 @@ private:
 	float AttackPower;
 	float DistanceFromPlayerChar;
 	FVector DirectionToPlayerChar;
+	bool IsDeathPlayerChar;
 };

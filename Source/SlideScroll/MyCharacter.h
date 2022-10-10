@@ -37,6 +37,8 @@ private:
 	void Attack();
 	virtual void Jump() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	void ChangeDamageColor();
 
 	UFUNCTION()
 	void OnColStartAttack();
@@ -50,16 +52,21 @@ public:
 	USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attack)
+	UPROPERTY(EditAnywhere, Category = Attack)
 	UCapsuleComponent* WeaponCollision;
 	UPROPERTY(EditAnywhere, Category = Animation)
 	UAnimMontage* AttackAnim;
 	UPROPERTY(EditAnywhere, Category = Animation)
 	UAnimMontage* JumpAnim;
+	UPROPERTY(EditAnywhere, Category = Animation)
+	UAnimMontage* DeathAnim;
 
 	UMyCharacterAnimInstance* AnimInstance;
 
 private:
 	float HP;
 	float AttackPower;
+
+public:
+	bool IsDeath;
 };

@@ -27,6 +27,8 @@ AMyCharacter::AMyCharacter()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 860.0f, 0.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	IsDeath = false;
 }
 
 // Called when the game starts or when spawned
@@ -114,6 +116,34 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	}
 }
 
+
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	ChangeDamageColor();
+
+	HP = FMath::Max(HP - Damage, 0.0f);
+	if (HP <= 0)
+	{
+		IsDeath = true;
+		PlayAnimMontage(DeathAnim);
+		DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PLAYER TAKE DAMEGE %f hp %f"), Damage, HP);
+	return Damage;
+}
+
+void AMyCharacter::ChangeDamageColor()
+{
+	GetMesh()->SetVectorParameterValueOnMaterials(TEXT("MainColor"), FVector(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f)));
+	FTimerHandle timerHandle;
+	GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			GetMesh()->SetVectorParameterValueOnMaterials(TEXT("MainColor"), FVector(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f)));
+		}), 0.1f, false);
+}
+
 void AMyCharacter::OnColStartAttack()
 {
 	WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -128,7 +158,7 @@ void AMyCharacter::OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedCom
 {
 	if (OtherActor != this)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OverLap %s"), *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("OverLap %s"), *OtherActor->GetName());
 		UGameplayStatics::ApplyDamage(OtherActor, AttackPower, GetController(), nullptr, NULL);
 	}
 }
