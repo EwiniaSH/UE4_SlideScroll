@@ -9,5 +9,6 @@ enum class EMonsterState : uint8
 	IdleCombat,
 	FollowPlayerChar,
 	AttackPlayerChar,
+	SkillAttackPlayerChar,
 	Death,
 };

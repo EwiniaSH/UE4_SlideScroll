@@ -76,7 +76,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::SetStatus()
 {
-	HP = 100.0f;
+	HP = 200.0f;
 	AttackPower = 50.0f;
 }
 
@@ -141,7 +141,7 @@ void AMyCharacter::ChangeDamageColor()
 	GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([&]()
 		{
 			GetMesh()->SetVectorParameterValueOnMaterials(TEXT("MainColor"), FVector(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f)));
-		}), 0.1f, false);
+		}), 0.2f, false);
 }
 
 void AMyCharacter::OnColStartAttack()
@@ -156,7 +156,7 @@ void AMyCharacter::OnColEndAttack()
 
 void AMyCharacter::OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != this)
+	if (OtherActor != this && OtherComp->ComponentHasTag(FName("Character")))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("OverLap %s"), *OtherActor->GetName());
 		UGameplayStatics::ApplyDamage(OtherActor, AttackPower, GetController(), nullptr, NULL);

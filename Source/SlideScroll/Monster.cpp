@@ -6,9 +6,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-const float AMonster::AGGRO_RANGE = 500.0f;
-const float AMonster::ATTACK_RANGE = 160.0f;
-
 // Sets default values
 AMonster::AMonster()
 {
@@ -58,17 +55,19 @@ void AMonster::Tick(float DeltaTime)
 	switch (CurrentState)
 	{
 	case EMonsterState::IdleReady:
+		IdleReady(DeltaTime);
 		break;
 	case EMonsterState::IdleCombat:
-		IdleCombat();
+		IdleCombat(DeltaTime);
 		break;
 	case EMonsterState::FollowPlayerChar:
-		FollowPlayerChar();
+		FollowPlayerChar(DeltaTime);
 		break;
 	case EMonsterState::AttackPlayerChar:
-		AttackPlayerChar();
+		AttackPlayerChar(DeltaTime);
 		break;
 	case EMonsterState::Death:
+		Death(DeltaTime);
 		break;
 	}
 }
@@ -80,21 +79,26 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AMonster::IdleCombat()
+void AMonster::IdleReady(float DeltaTime)
 {
-	if (DistanceFromPlayerChar <= AGGRO_RANGE)
+
+}
+
+void AMonster::IdleCombat(float DeltaTime)
+{
+	if (DistanceFromPlayerChar <= AggroRange)
 	{
 		CurrentState = EMonsterState::FollowPlayerChar;
 	}
 }
 
-void AMonster::FollowPlayerChar()
+void AMonster::FollowPlayerChar(float DeltaTime)
 {
-	if (DistanceFromPlayerChar > AGGRO_RANGE)
+	if (DistanceFromPlayerChar > AggroRange)
 	{
 		CurrentState = EMonsterState::IdleCombat;
 	}
-	else if (DistanceFromPlayerChar <= ATTACK_RANGE)
+	else if (DistanceFromPlayerChar <= AttackRange)
 	{
 		CurrentState = EMonsterState::AttackPlayerChar;
 	}
@@ -104,14 +108,14 @@ void AMonster::FollowPlayerChar()
 	}
 }
 
-void AMonster::AttackPlayerChar()
+void AMonster::AttackPlayerChar(float DeltaTime)
 {
 	if (AnimInstance->Montage_IsPlaying(AttackAnim))
 	{
 		return;
 	}
 
-	if (DistanceFromPlayerChar > ATTACK_RANGE)
+	if (DistanceFromPlayerChar > AttackRange)
 	{
 		CurrentState = EMonsterState::FollowPlayerChar;
 	}
@@ -121,10 +125,17 @@ void AMonster::AttackPlayerChar()
 	}
 }
 
+void AMonster::Death(float DeltaTime)
+{
+
+}
+
 void AMonster::SetStatus()
 {
 	HP = 100.0f;
 	AttackPower = 20.0f;
+	AggroRange = 500.0f;
+	AttackRange = 160.0f;
 }
 
 float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -153,7 +164,7 @@ void AMonster::ChangeDamageColor()
 	GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([&]()
 		{
 			GetMesh()->SetVectorParameterValueOnMaterials(TEXT("MainColor"), FVector(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f)));
-		}), 0.1f, false);
+		}), 0.2f, false);
 }
 
 void AMonster::UpdatePlayerCharInfo()
@@ -183,7 +194,7 @@ void AMonster::OnColEndAttack()
 
 void AMonster::OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != this)
+	if (OtherActor != this && OtherComp->ComponentHasTag(FName("Character")))
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, AttackPower, GetController(), nullptr, NULL);
 	}

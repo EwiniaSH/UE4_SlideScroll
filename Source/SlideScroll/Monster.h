@@ -14,9 +14,6 @@ class SLIDESCROLL_API AMonster : public ACharacter
 {
 	GENERATED_BODY()
 
-	static const float AGGRO_RANGE;
-	static const float ATTACK_RANGE;
-
 public:
 	// Sets default values for this character's properties
 	AMonster();
@@ -34,22 +31,24 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private:
-	void IdleCombat();
-	void FollowPlayerChar();
-	void AttackPlayerChar();
+protected:
+	virtual void IdleReady(float DeltaTime);
+	virtual void IdleCombat(float DeltaTime);
+	virtual void FollowPlayerChar(float DeltaTime);
+	virtual void AttackPlayerChar(float DeltaTime);
+	virtual void Death(float DeltaTime);
 
-	void SetStatus();
+	virtual void SetStatus();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	void ChangeDamageColor();
 	void UpdatePlayerCharInfo();
 
 	UFUNCTION()
-		void OnColStartAttack();
+	void OnColStartAttack();
 	UFUNCTION()
-		void OnColEndAttack();
+	void OnColEndAttack();
 	UFUNCTION()
-		void OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnBeginWeaponOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 	UPROPERTY(EditAnywhere, Category = Attack)
@@ -61,10 +60,13 @@ public:
 
 	UMonsterAnimInstance* AnimInstance;
 
-private:
+protected:
 	EMonsterState CurrentState;
 	float HP;
 	float AttackPower;
+	float AggroRange;
+	float AttackRange;
+
 	float DistanceFromPlayerChar;
 	FVector DirectionToPlayerChar;
 	bool IsDeathPlayerChar;
