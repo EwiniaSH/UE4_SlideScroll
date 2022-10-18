@@ -27,9 +27,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	EMonsterState GetMonsterState();
 
 protected:
 	virtual void IdleReady(float DeltaTime);
@@ -41,7 +42,7 @@ protected:
 	virtual void SetStatus();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	void ChangeDamageColor();
-	void UpdatePlayerCharInfo();
+	void UpdateGameInfo();
 
 	UFUNCTION()
 	void OnColStartAttack();

@@ -7,6 +7,8 @@
 
 ABossMonster::ABossMonster()
 {
+	Tags.Add(FName("Boss"));
+
 	SkillCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SkillCollision"));
 	SkillCollision->SetupAttachment(GetMesh(), TEXT("LeftHand"));
 }
@@ -42,7 +44,7 @@ void ABossMonster::Tick(float DeltaTime)
 {
 	Super::Super::Tick(DeltaTime);
 
-	UpdatePlayerCharInfo();
+	UpdateGameInfo();
 	switch (CurrentState)
 	{
 	case EMonsterState::IdleReady:

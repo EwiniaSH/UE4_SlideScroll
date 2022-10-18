@@ -3,6 +3,7 @@
 
 #include "Monster.h"
 #include "MyCharacter.h"
+#include "MyGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -11,6 +12,8 @@ AMonster::AMonster()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	Tags.Add(FName("Monster"));
 
 	WeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
 	WeaponCollision->SetupAttachment(GetMesh(), TEXT("RightHand"));
@@ -51,7 +54,7 @@ void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UpdatePlayerCharInfo();
+	UpdateGameInfo();
 	switch (CurrentState)
 	{
 	case EMonsterState::IdleReady:
@@ -77,6 +80,11 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+EMonsterState AMonster::GetMonsterState()
+{
+	return CurrentState;
 }
 
 void AMonster::IdleReady(float DeltaTime)
@@ -168,7 +176,7 @@ void AMonster::ChangeDamageColor()
 		}), 0.2f, false);
 }
 
-void AMonster::UpdatePlayerCharInfo()
+void AMonster::UpdateGameInfo()
 {
 	AMyCharacter* myCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FVector playerLocation = myCharacter->GetActorLocation();
@@ -177,7 +185,9 @@ void AMonster::UpdatePlayerCharInfo()
 	DirectionToPlayerChar.Normalize();
 	IsDeathPlayerChar = myCharacter->IsDeath;
 
-	if (IsDeathPlayerChar)
+	AMyGameMode* gameMode = Cast<AMyGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	if (IsDeathPlayerChar || gameMode->GetGamePlayState() == EGamePlayState::StageClear)
 	{
 		CurrentState = EMonsterState::IdleReady;
 	}
